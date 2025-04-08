@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytz
 
-import firebase_admin_rconfig.conditions as cond
+import firebase_remote_config.conditions as cond
 
 
 def test_percent():

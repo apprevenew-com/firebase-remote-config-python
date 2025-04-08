@@ -30,7 +30,7 @@ First, initialize the client with your Firebase credentials:
 
 ```python
 from google.oauth2 import service_account
-from firebase_admin_rconfig import RemoteConfigClient
+from firebase_remote_config import RemoteConfigClient
 
 # Initialize the client
 credentials = service_account.Credentials.from_service_account_file('path/to/service-account.json')
@@ -49,7 +49,7 @@ updated_config = client.update_remote_config(config)
 #### 1. Creating and Updating Parameters
 
 ```python
-from firebase_admin_rconfig import RemoteConfigParameter, TagColor
+from firebase_remote_config import RemoteConfigParameter, TagColor
 
 # Add new parameter to the remote config template
 new_param = RemoteConfigParameter(
@@ -67,7 +67,7 @@ param.description = "My new parameter"
 #### 2. Working with Conditional Values
 
 ```python
-from firebase_admin_rconfig import RemoteConfigCondition, TagColor
+from firebase_remote_config import RemoteConfigCondition, TagColor
 
 # Create condition object
 condition = RemoteConfigCondition(
@@ -92,8 +92,8 @@ config.set_conditional_value(
 
 ```python
 from datetime import datetime
-from firebase_admin_rconfig.conditions import ConditionBuilder
-from firebase_admin_rconfig import RemoteConfigCondition, TagColor
+from firebase_remote_config.conditions import ConditionBuilder
+from firebase_remote_config import RemoteConfigCondition, TagColor
 
 # Create a complex condition
 builder = ConditionBuilder()
@@ -123,13 +123,13 @@ feature_param.set_conditional_value(
 #### 4. Version Management
 
 ```python
-from firebase_admin_rconfig.models import ListVersionsParameters
+from firebase_remote_config.models import ListVersionsParameters
 
 # List recent versions
 versions, _ = client.list_versions(page_size=30)
 
 # Rollback to a previous version
-from firebase_admin_rconfig.models import RollbackRequest
+from firebase_remote_config.models import RollbackRequest
 
 rolled_back_config = client.rollback("42")
 ```

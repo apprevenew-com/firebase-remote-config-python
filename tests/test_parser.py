@@ -1,4 +1,4 @@
-import firebase_admin_rconfig.conditions as cond
+import firebase_remote_config.conditions as cond
 
 
 def test_end_to_end():
