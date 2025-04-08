@@ -2,6 +2,7 @@ from .builder import ConditionBuilder
 from .conditions import (
     AndCondition,
     AtomCondition,
+    Condition,
     CustomValue,
     Element,
     ElementCondition,
@@ -11,7 +12,6 @@ from .conditions import (
     PercentRange,
     TrueCondition,
     str_custom_value,
-    Condition,
 )
 from .enums import (
     ElementName,
