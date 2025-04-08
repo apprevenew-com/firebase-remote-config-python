@@ -1,4 +1,4 @@
-# Firebase Remote Config Admin SDK for Python
+# Firebase Remote Config SDK for Python
 
 A Python SDK for managing Firebase Remote Config via REST API. This package provides a convenient way to interact with Firebase Remote Config programmatically.
 
@@ -13,14 +13,14 @@ A Python SDK for managing Firebase Remote Config via REST API. This package prov
 ## Installation
 
 ```bash
-pip install firebase-admin-rconfig
+pip install firebase-remote-config
 ```
 
 ## Requirements
 
 - Python 3.9 or higher
 - Firebase project with Remote Config enabled
-- Service account credentials with Firebase Remote Config Admin permissions
+- Service account credentials with Firebase Remote Config admin permissions
 
 ## Usage
 
