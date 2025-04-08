@@ -2,9 +2,7 @@ from datetime import datetime
 
 import pytz
 
-from firebase_admin_rconfig.conditions import conditions as cond
-from firebase_admin_rconfig.conditions import enums
-from firebase_admin_rconfig.conditions.builder import ConditionBuilder
+import firebase_admin_rconfig.conditions as cond
 
 
 def test_percent():
@@ -12,7 +10,7 @@ def test_percent():
         name=__name__,
         condition=cond.PercentCondition(
             percent=50,
-            percentOperator=enums.PercentConditionOperator.LESS_OR_EQUAL
+            percentOperator=cond.PercentConditionOperator.LESS_OR_EQUAL
         ),
     )
     assert str(c) == "percent <= 50"
@@ -21,7 +19,7 @@ def test_percent():
         name=__name__,
         condition=cond.PercentCondition(
             percentRange=cond.PercentRange(lowerBound=0, upperBound=50),
-            percentOperator=enums.PercentConditionOperator.BETWEEN
+            percentOperator=cond.PercentConditionOperator.BETWEEN
         ),
     )
     assert str(c) == "percent between 0 and 50"
@@ -36,23 +34,23 @@ def test_always():
 
 
 def test_builder():
-    b = ConditionBuilder()
+    b = cond.ConditionBuilder()
     c = b.CONDITION().APP_CUSTOM_SIGNAL("custom_key").EQ(123).build()
     assert str(c) == "app.customSignal['custom_key'] == 123"
 
-    b = ConditionBuilder()
+    b = cond.ConditionBuilder()
     c = b.CONDITION().APP_VERSION().GT("1.2.0").build()
     assert str(c) == "app.version.>(['1.2.0'])"
 
-    b = ConditionBuilder()
+    b = cond.ConditionBuilder()
     c = b.CONDITION().DEVICE_DATETIME().GTE(datetime(2025, 1, 1, 10, 10, 42)).build()
     assert str(c) == "dateTime >= dateTime('2025-01-01T10:10:42')"
 
-    b = ConditionBuilder()
+    b = cond.ConditionBuilder()
     c = b.CONDITION().APP_FIRST_OPEN_TIMESTAMP().LTE(datetime(2025, 1, 1, 10, 10, 42)).build()
     assert str(c) == "app.firstOpenTimestamp <= ('2025-01-01T10:10:42')"
 
-    b = ConditionBuilder()
+    b = cond.ConditionBuilder()
     b.CONDITION().DEVICE_LANGUAGE().IN(["en-US"])
     b.PERCENT().LTE(50)
     b.CONDITION().APP_FIRST_OPEN_TIMESTAMP().LTE(datetime(2025, 1, 1, 10, 10, 42))
@@ -62,7 +60,7 @@ def test_builder():
 
 
 def test_datetime_timezone():
-    b = ConditionBuilder()
+    b = cond.ConditionBuilder()
     dt_tz_naive = datetime(2025, 1, 1, 10, 10, 42)
     dt_tz_aware = datetime(2025, 1, 1, 10, 10, 42).replace(tzinfo=pytz.UTC)
     b.CONDITION().DEVICE_DATETIME().GTE(dt_tz_naive)
@@ -72,7 +70,7 @@ def test_datetime_timezone():
 
 
 def test_element_app_build():
-    b = ConditionBuilder()
+    b = cond.ConditionBuilder()
     b.CONDITION().APP_BUILD().GTE("1.0.0")
     b.CONDITION().APP_BUILD().CONTAINS(["1.0.0", "1.0.1"])
     c = b.build()

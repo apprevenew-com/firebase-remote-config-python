@@ -1,4 +1,4 @@
-from firebase_admin_rconfig.conditions.parser import ConditionParser
+import firebase_admin_rconfig.conditions as cond
 
 
 def test_end_to_end():
@@ -15,7 +15,7 @@ def test_end_to_end():
         "dateTime < dateTime('2025-01-01T09:02:30') && dateTime >= dateTime('2025-01-01T09:02:30', 'UTC')",
     ]
 
-    p = ConditionParser()
+    p = cond.ConditionParser()
 
     for case_str in test_cases:
         condition = p.parse(case_str)
