@@ -9,7 +9,7 @@ description = "Firebase Remote Config SDK"
 authors = [
   { name="Dmitry Kaysin", email="kaysin.dmitry@gmail.com" }
 ]
-license = "Apache License (2.0)"
+license = {text = "Apache License (2.0)"}
 license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">= 3.9"
