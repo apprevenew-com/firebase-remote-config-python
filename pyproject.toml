@@ -1,0 +1,31 @@
+[project]
+name = "firebase-admin-rconfig"
+version = "0.1.0"
+description = "Firebase Remote Config Admin SDK"
+readme = "README.md"
+requires-python = ">=3.9,<3.13"
+dependencies = [
+    "requests==2.32.3",
+    "google-auth==2.38.0",
+    "pydantic==2.10.6",
+    "pyparsing==3.2.1",
+    "pytz==2024.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.11.0",
+    "pytest==8.3.5"
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"*/__init__.py" = ["F401"]
