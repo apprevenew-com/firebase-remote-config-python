@@ -1,4 +1,4 @@
-from ..conditions.parser import ConditionParser
+from firebase_admin_rconfig.conditions.parser import ConditionParser
 
 
 def test_end_to_end():

@@ -2,9 +2,9 @@ from datetime import datetime
 
 import pytz
 
-from ..conditions import conditions as cond
-from ..conditions import enums
-from ..conditions.builder import ConditionBuilder
+from firebase_admin_rconfig.conditions import conditions as cond
+from firebase_admin_rconfig.conditions import enums
+from firebase_admin_rconfig.conditions.builder import ConditionBuilder
 
 
 def test_percent():
