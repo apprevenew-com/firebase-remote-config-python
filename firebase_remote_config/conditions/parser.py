@@ -101,8 +101,13 @@ def make_element_condition(el_name: enums.ElementName, op: enums.ElementOperator
         expr = expr + in_brackets(literal_str("key"))
 
     if valid.needs_dot(op):
-        expr = expr + "."
+        expr = expr + ~pp.White() + "." + ~pp.White()
+
     expr = expr + pp.Keyword(op.value)("op")
+
+    if valid.needs_dot(op):
+        # no whitespace after method operator
+        expr = expr + ~pp.White()
 
     expr = expr + value(el_name, op)
 

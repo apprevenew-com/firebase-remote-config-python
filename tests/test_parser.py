@@ -1,9 +1,10 @@
 import firebase_remote_config.conditions as cond
 
 
-def test_end_to_end():
+def test_basic():
+    p = cond.ConditionParser()
 
-    test_cases = [
+    test_cases_valid = [
         "false && true",
         "app.userProperty['hello'].contains(['abc', 'def']) && app.userProperty['bye'] >= 2",
         "percent('seeeeeed') between 0 and 20 && app.id == 'my-app-id'",
@@ -15,9 +16,7 @@ def test_end_to_end():
         "dateTime < dateTime('2025-01-01T09:02:30') && dateTime >= dateTime('2025-01-01T09:02:30', 'UTC')",
     ]
 
-    p = cond.ConditionParser()
-
-    for case_str in test_cases:
+    for case_str in test_cases_valid:
         condition = p.parse(case_str)
         passed = str(condition) == case_str
 
@@ -26,3 +25,23 @@ def test_end_to_end():
         except AssertionError as e:
             print("\nError!")
             raise AssertionError(f"ground: {case_str}, condition: {condition}") from e
+
+def test_invalid_whitespace():
+    p = cond.ConditionParser()
+
+    test_cases_invalid = [
+        "app.userProperty['hello'] .contains(['abc', 'def'])",
+        "app.userProperty['hello']. contains(['abc', 'def'])",
+        "app.version.>= (['1.0.0'])",
+        "app.version. >= (['1.0.0'])",
+    ]
+
+    for case_str in test_cases_invalid:
+        try:
+            condition = p.parse(case_str)
+            passed = True
+        except Exception:
+            passed = False
+
+        if passed:
+            raise AssertionError(f"Parsed invalid condition {case_str} into {str(condition)}")
