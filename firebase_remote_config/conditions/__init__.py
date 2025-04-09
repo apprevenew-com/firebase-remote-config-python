@@ -23,7 +23,7 @@ from .enums import (
     ElementOperatorMethodString,
     PercentConditionOperator,
 )
-from .parser import ConditionParser
+from .parser import ConditionParser, get_grammar
 
 __all__ = [
     'ConditionBuilder',
@@ -48,4 +48,5 @@ __all__ = [
     'ElementOperatorMethodString',
     'PercentConditionOperator',
     'ConditionParser',
+    'get_grammar',
 ]

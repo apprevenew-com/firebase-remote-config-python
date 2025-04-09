@@ -149,3 +149,6 @@ class ConditionParser():
         """Parses the input string and returns the parsed condition."""
         res = pattern.parse_string(input, parse_all=True)
         return res[0]
+
+def get_grammar() -> str:
+    return str(pattern)
