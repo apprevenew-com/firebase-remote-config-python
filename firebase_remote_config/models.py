@@ -270,7 +270,7 @@ class RemoteConfig(BaseModel):
         return next((c for c in self.iterate_conditions() if c.name == condition_name), None)
 
     def iterate_parameter_items(self) -> Iterator[Tuple[str, RemoteConfigParameter]]:
-        for tpl in chain(self.template.parameters.items(), *[pg.parameters.items() for pg in self.template.parameterGroups.items()]):
+        for tpl in chain(self.template.parameters.items(), *[pg.parameters.items() for pg in self.template.parameterGroups.values()]):
             yield tpl
 
     def iterate_conditions(self) -> Iterator[RemoteConfigCondition]:

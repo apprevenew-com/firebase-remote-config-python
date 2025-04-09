@@ -26,7 +26,20 @@ def get_config():
                     valueType=rc.ParameterValueType.STRING,
                 ),
             },
-            parameterGroups={},
+            parameterGroups={
+                "pg1": rc.RemoteConfigParameterGroup(
+                    parameters={
+                        "test_param_2": rc.RemoteConfigParameter(
+                            defaultValue=rc.RemoteConfigParameterValue(value="test_value_2_default"),
+                            valueType=rc.ParameterValueType.STRING,
+                        ),
+                        "test_param_3": rc.RemoteConfigParameter(
+                            defaultValue=rc.RemoteConfigParameterValue(value="test_value_3_default"),
+                            valueType=rc.ParameterValueType.STRING,
+                        ),
+                    },
+                ),
+            },
         ),
         etag="test",
     )
@@ -40,7 +53,7 @@ def test_iterate():
     assert len(list(config.iterate_conditions())) == 2
 
     # iterate over parameters
-    assert len(list(config.iterate_parameter_items())) == 1
+    assert len(list(config.iterate_parameter_items())) == 3
 
 
 def test_crd():
@@ -70,7 +83,7 @@ def test_crd():
     )
 
     config.set_conditional_value(
-        "test_param_2",
+        "new_test_param",
         rc.RemoteConfigParameterValue(value="new_test_value"),
         rc.ParameterValueType.STRING,
         "new_condition",
@@ -87,4 +100,4 @@ def test_crd():
     assert config.template.conditions[1].name == "condition_2"
 
     assert len(config.template.parameters["test_param_1"].conditionalValues.values()) == 2
-    assert config.template.parameters["test_param_2"].conditionalValues == {}
+    assert config.template.parameters["new_test_param"].conditionalValues == {}
