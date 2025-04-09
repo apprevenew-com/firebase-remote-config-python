@@ -45,3 +45,7 @@ def test_invalid_whitespace():
 
         if passed:
             raise AssertionError(f"Parsed invalid condition {case_str} into {str(condition)}")
+
+def test_get_grammar():
+    grammar = cond.get_grammar()
+    assert len(grammar) > 0
