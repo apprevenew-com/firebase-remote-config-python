@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from enum import Enum
 from itertools import chain
-from typing import Any, Dict, Iterator, List, Optional, Union, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field, field_serializer
 

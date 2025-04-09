@@ -1,5 +1,6 @@
 import firebase_remote_config as rc
 
+
 def get_config():
     config = rc.RemoteConfig(
         template=rc.RemoteConfigTemplate(
