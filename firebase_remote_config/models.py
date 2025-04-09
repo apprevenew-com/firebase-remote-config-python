@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from enum import Enum
 from itertools import chain
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union, Tuple
 
 from pydantic import BaseModel, Field, field_serializer
 
@@ -205,7 +205,7 @@ class RemoteConfig(BaseModel):
         self.template.conditions = [c for c in self.template.conditions if c.name not in condition_names]
 
         # after deleting conditions we need to clean up orphan params
-        for param in self.iterate_params():
+        for _, param in self.iterate_parameter_items():
             param.remove_conditional_values(condition_names)
 
     def set_conditional_value(self, param_key: str, param_value: RemoteConfigParameterValue, param_value_type: ParameterValueType, condition_name: str) -> None:
@@ -269,9 +269,9 @@ class RemoteConfig(BaseModel):
     def find_condition_by_name(self, condition_name: str) -> Optional[RemoteConfigCondition]:
         return next((c for c in self.iterate_conditions() if c.name == condition_name), None)
 
-    def iterate_params(self) -> Iterator[RemoteConfigParameter]:
-        for param in chain(self.template.parameters.values(), *[pg.parameters.values() for pg in self.template.parameterGroups.values()]):
-            yield param
+    def iterate_parameter_items(self) -> Iterator[Tuple[str, RemoteConfigParameter]]:
+        for tpl in chain(self.template.parameters.items(), *[pg.parameters.items() for pg in self.template.parameterGroups.items()]):
+            yield tpl
 
     def iterate_conditions(self) -> Iterator[RemoteConfigCondition]:
         for condition in self.template.conditions:
