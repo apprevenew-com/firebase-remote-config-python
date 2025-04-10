@@ -59,7 +59,7 @@ class ElementOperatorBinaryArray(Enum):
     IN = "in"  # Matches if the actual value matches any specified in the list.
 
 
-class ElementOperatorAudiences(Enum):
+class ElementOperatorMethodAudiences(Enum):
     """Compares a value to a list of target audience names."""
     IN_AT_LEAST_ONE = "inAtLeastOne"  # Matches if the actual audience matches at least one audience name in the list.
     NOT_IN_AT_LEAST_ONE = "notInAtLeastOne"  # Matches if the actual audience does not match at least one audience name in the list.
@@ -67,7 +67,7 @@ class ElementOperatorAudiences(Enum):
     NOT_IN_ALL = "notInAll"  # Matches if the actual audience is not a member of any audience in the list.
 
 
-ElementOperator = Union[ElementOperatorBinary, ElementOperatorMethodString, ElementOperatorMethodSemantic, ElementOperatorBinaryArray, ElementOperatorAudiences]
+ElementOperator = Union[ElementOperatorBinary, ElementOperatorMethodString, ElementOperatorMethodSemantic, ElementOperatorBinaryArray, ElementOperatorMethodAudiences]
 
 
 class PercentConditionOperator(Enum):

@@ -54,7 +54,7 @@ def get_supported_ops(name: enums.ElementName) -> List[enums.ElementOperator]:
         enums.ElementName.APP_BUILD: list(enums.ElementOperatorMethodSemantic) + list(enums.ElementOperatorMethodString),
         enums.ElementName.APP_VERSION: list(enums.ElementOperatorMethodSemantic) + list(enums.ElementOperatorMethodString),
         enums.ElementName.APP_ID: [enums.ElementOperatorBinary.EQ],
-        enums.ElementName.APP_AUDIENCES: list(enums.ElementOperatorAudiences),
+        enums.ElementName.APP_AUDIENCES: list(enums.ElementOperatorMethodAudiences),
         enums.ElementName.APP_FIRST_OPEN_TIMESTAMP: [enums.ElementOperatorBinary.LTE, enums.ElementOperatorBinary.GT],
         enums.ElementName.DEVICE_DATETIME: [enums.ElementOperatorBinary.LT, enums.ElementOperatorBinary.GTE],
         enums.ElementName.APP_FIREBASE_INSTALLATION_ID: list(enums.ElementOperatorBinaryArray),
@@ -80,22 +80,34 @@ def needs_single_value(op: enums.ElementOperator) -> bool:
     """
     if isinstance(op, (enums.ElementOperatorBinary, enums.ElementOperatorMethodSemantic)):
         return True
-    if isinstance(op, (enums.ElementOperatorMethodString, enums.ElementOperatorBinaryArray, enums.ElementOperatorAudiences)):
+    if isinstance(op, (enums.ElementOperatorMethodString, enums.ElementOperatorBinaryArray, enums.ElementOperatorMethodAudiences)):
         return False
     raise ValueError(f"Unknown operator: {op}")
 
 
-def needs_parentheses(op: enums.ElementOperator) -> bool:
+def has_method_syntax(op: enums.ElementOperator) -> bool:
     """
-    Checks if an operator needs parentheses around its value.
+    Checks if an operator has method syntax, i.e. element_name.<operator>([value1, ...])
     :param ElementOperator op: The operator to check.
+    Raises:
+        ValueError: If an unknown operator is provided.
     """
-    return isinstance(op, (enums.ElementOperatorMethodString, enums.ElementOperatorMethodSemantic, enums.ElementOperatorAudiences))
+    if isinstance(op, (enums.ElementOperatorMethodString, enums.ElementOperatorMethodSemantic, enums.ElementOperatorMethodAudiences)):
+        return True
+    if isinstance(op, (enums.ElementOperatorBinary, enums.ElementOperatorBinaryArray)):
+        return False
+    raise ValueError(f"Unknown operator: {op}")
 
+def supports_datetime(name: enums.ElementName) -> bool:
+    """
+    Checks if element name supports datetime values.
+    :param ElementName name: The name of the element.
+    """
+    return name == enums.ElementName.DEVICE_DATETIME
 
-def needs_dot(op: enums.ElementOperator) -> bool:
+def supports_timestamp(name: enums.ElementName) -> bool:
     """
-    Checks if syntax requires a dot before operator.
-    :param ElementOperator op: The operator to check.
+    Checks if element name supports timestamp values.
+    :param ElementName name: The name of the element.
     """
-    return isinstance(op, (enums.ElementOperatorMethodString, enums.ElementOperatorMethodSemantic, enums.ElementOperatorAudiences))
+    return name == enums.ElementName.APP_FIRST_OPEN_TIMESTAMP

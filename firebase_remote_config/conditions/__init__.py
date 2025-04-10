@@ -16,7 +16,7 @@ from .conditions import (
 from .enums import (
     ElementName,
     ElementOperator,
-    ElementOperatorAudiences,
+    ElementOperatorMethodAudiences,
     ElementOperatorBinary,
     ElementOperatorBinaryArray,
     ElementOperatorMethodSemantic,
@@ -41,7 +41,7 @@ __all__ = [
     'Condition',
     'ElementName',
     'ElementOperator',
-    'ElementOperatorAudiences',
+    'ElementOperatorMethodAudiences',
     'ElementOperatorBinary',
     'ElementOperatorBinaryArray',
     'ElementOperatorMethodSemantic',

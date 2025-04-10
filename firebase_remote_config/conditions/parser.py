@@ -73,19 +73,22 @@ value_single_datetime = pp.Keyword("datetime", caseless=True) + in_parentheses(l
 value_array_str = in_brackets(pp.DelimitedList(literal_str)("value_array"))
 
 
-def value(name: enums.ElementName, op: enums.ElementOperator) -> pp.ParserElement:
+def make_value(name: enums.ElementName, op: enums.ElementOperator) -> pp.ParserElement:
     """Returns ParserElement for a value depending on provided element name and operator."""
-    if valid.needs_single_value(op):
-        if valid.supports_value_str(name, op):
-            expr = in_brackets(value_single_str) | value_single_str | value_single_datetime | value_single_timestamp
-        if valid.supports_value_number(name, op):
-            expr = value_single_int
+    if valid.has_method_syntax(op):
+        if valid.needs_single_value(op):
+            return in_brackets(value_single_str)
+        else:
+            return value_array_str
     else:
-        expr = value_array_str
-
-    if valid.needs_parentheses(op):
-        expr = in_parentheses(expr)
-    return expr
+        if valid.needs_single_value(op):
+            if valid.supports_datetime(name):
+                return value_single_datetime
+            elif valid.supports_timestamp(name):
+                return value_single_timestamp
+            return value_single_int | value_single_str
+        else:
+            return value_array_str
 
 
 def supported(el_name: enums.ElementName, op: enums.ElementOperator) -> bool:
@@ -100,16 +103,20 @@ def make_element_condition(el_name: enums.ElementName, op: enums.ElementOperator
     if valid.supports_key(el_name):
         expr = expr + in_brackets(literal_str("key"))
 
-    if valid.needs_dot(op):
+    if valid.has_method_syntax(op):
         expr = expr + ~pp.White() + "." + ~pp.White()
 
     expr = expr + pp.Keyword(op.value)("op")
 
-    if valid.needs_dot(op):
+    if valid.has_method_syntax(op):
         # no whitespace after method operator
         expr = expr + ~pp.White()
 
-    expr = expr + value(el_name, op)
+    value = make_value(el_name, op)
+    if valid.has_method_syntax(op):
+        value = in_parentheses(value)
+
+    expr = expr + value
 
     expr.set_parse_action(lambda toks: cond.ElementCondition(
         element=cond.Element(
@@ -124,7 +131,7 @@ def make_element_condition(el_name: enums.ElementName, op: enums.ElementOperator
     return expr
 
 
-element_operators = list(enums.ElementOperatorMethodString) + list(enums.ElementOperatorMethodSemantic) + list(enums.ElementOperatorBinary) + list(enums.ElementOperatorBinaryArray) + list(enums.ElementOperatorAudiences)
+element_operators = list(enums.ElementOperatorMethodString) + list(enums.ElementOperatorMethodSemantic) + list(enums.ElementOperatorBinary) + list(enums.ElementOperatorBinaryArray) + list(enums.ElementOperatorMethodAudiences)
 element_conditions = [make_element_condition(el_name, op) for el_name in enums.ElementName for op in element_operators if supported(el_name, op)]
 element_condition = pp.MatchFirst(element_conditions)
 

@@ -1,7 +1,7 @@
 import firebase_remote_config.conditions as cond
 
 
-def test_basic():
+def test_valid_conditions():
     p = cond.ConditionParser()
 
     test_cases_valid = [
@@ -17,8 +17,11 @@ def test_basic():
     ]
 
     for case_str in test_cases_valid:
-        condition = p.parse(case_str)
-        passed = str(condition) == case_str
+        try:
+            condition = p.parse(case_str)
+            passed = str(condition) == case_str
+        except Exception as e:
+            raise ValueError(f"Error parsing {case_str}") from e
 
         try:
             assert passed
@@ -26,10 +29,23 @@ def test_basic():
             print("\nError!")
             raise AssertionError(f"ground: {case_str}, condition: {condition}") from e
 
-def test_invalid_whitespace():
+def test_invalid_conditions():
     p = cond.ConditionParser()
 
     test_cases_invalid = [
+        # invalid element / operator / value combinations
+        "device.country == 'US'",
+        "dateTime < ('2025-01-01T09:02:30')",
+        "app.firstOpenTimestamp <= dateTime('2025-01-01T09:02:30')",
+        "app.version.>=('1.0.1')",
+        "app.version >= '1.0.1'",
+        "app.version >= (['1.0.1'])",
+        "app.userProperty['hello'] == 'def'",
+        "app.userProperty['hello'].=='def'",
+        "app.userProperty['hello'].==('def')",
+        "app.userProperty['hello'].contains([123])",
+
+        # invalid whitespace
         "app.userProperty['hello'] .contains(['abc', 'def'])",
         "app.userProperty['hello']. contains(['abc', 'def'])",
         "app.version.>= (['1.0.0'])",
@@ -46,6 +62,7 @@ def test_invalid_whitespace():
         if passed:
             raise AssertionError(f"Parsed invalid condition {case_str} into {str(condition)}")
 
-def test_get_grammar():
+
+def test_get_grammar_method():
     grammar = cond.get_grammar()
     assert len(grammar) > 0

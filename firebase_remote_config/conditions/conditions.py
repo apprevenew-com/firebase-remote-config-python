@@ -120,7 +120,7 @@ class ElementCondition(BaseModel):
             v = str_custom_value(v)
             return f"{self.element}.{self.operator.value}([{v}])"
 
-        if isinstance(self.operator, (enums.ElementOperatorMethodString, enums.ElementOperatorAudiences)):
+        if isinstance(self.operator, (enums.ElementOperatorMethodString, enums.ElementOperatorMethodAudiences)):
             xv = [str_custom_value(v) for v in self.values]
             xv = ", ".join(xv)
             xv = f"[{xv}]"

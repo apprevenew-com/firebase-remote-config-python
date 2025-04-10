@@ -334,7 +334,7 @@ class ConditionBuilder(ConditionAppender):
                 :param List[str] xs: Audiences to match against.
                 Example: ["high_value_users", "new_users"]
                 """
-                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorAudiences.IN_AT_LEAST_ONE, xs))
+                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.IN_AT_LEAST_ONE, xs))
 
             def NOT_IN_AT_LEAST_ONE(self, xs: List[str]) -> ConditionBuilder:
                 """
@@ -342,7 +342,7 @@ class ConditionBuilder(ConditionAppender):
                 :param List[str] xs: Audiences to match against.
                 Example: ["inactive_users", "churned_users"]
                 """
-                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorAudiences.NOT_IN_AT_LEAST_ONE, xs))
+                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.NOT_IN_AT_LEAST_ONE, xs))
 
             def IN_ALL(self, xs: List[str]) -> ConditionBuilder:
                 """
@@ -350,7 +350,7 @@ class ConditionBuilder(ConditionAppender):
                 :param List[str] xs: Audiences to match against.
                 Example: ["premium_users", "active_users"]
                 """
-                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorAudiences.IN_ALL, xs))
+                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.IN_ALL, xs))
 
             def NOT_IN_ALL(self, xs: List[str]) -> ConditionBuilder:
                 """
@@ -358,7 +358,7 @@ class ConditionBuilder(ConditionAppender):
                 :param List[str] xs: Audiences to match against.
                 Example: ["beta_testers", "early_adopters"]
                 """
-                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorAudiences.NOT_IN_ALL, xs))
+                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.NOT_IN_ALL, xs))
 
         class _APP_FIRST_OPEN_TIMESTAMP(ConditionAppender):
             element = enums.ElementName.APP_FIRST_OPEN_TIMESTAMP
