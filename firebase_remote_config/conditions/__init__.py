@@ -16,9 +16,9 @@ from .conditions import (
 from .enums import (
     ElementName,
     ElementOperator,
-    ElementOperatorMethodAudiences,
     ElementOperatorBinary,
     ElementOperatorBinaryArray,
+    ElementOperatorMethodAudiences,
     ElementOperatorMethodSemantic,
     ElementOperatorMethodString,
     PercentConditionOperator,
