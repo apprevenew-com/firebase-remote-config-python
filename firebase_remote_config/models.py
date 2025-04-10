@@ -308,10 +308,10 @@ def value_to_type(v: Union[str, int, float, bool]) -> ParameterValueType:
         value_type = ParameterValueType.NUMBER
     elif is_bool(v):
         value_type = ParameterValueType.BOOLEAN
-    elif is_str(v):
-        value_type = ParameterValueType.STRING
     elif is_json(v):
         value_type = ParameterValueType.JSON
+    elif is_str(v):
+        value_type = ParameterValueType.STRING
     else:
         raise ValueError(f"Unknown value type: {type(v)}")
     return value_type

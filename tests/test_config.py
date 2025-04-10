@@ -101,3 +101,29 @@ def test_crd():
 
     assert len(config.template.parameters["test_param_1"].conditionalValues.values()) == 2
     assert config.template.parameters["new_test_param"].conditionalValues == {}
+
+def test_value_to_type():
+    assert rc.value_to_type("test") == rc.ParameterValueType.STRING
+
+    assert rc.value_to_type('{"key": "value"}') == rc.ParameterValueType.JSON
+
+    assert rc.value_to_type(1) == rc.ParameterValueType.NUMBER
+    assert rc.value_to_type(-1) == rc.ParameterValueType.NUMBER
+
+    assert rc.value_to_type(1.0) == rc.ParameterValueType.NUMBER
+    assert rc.value_to_type(-1.0) == rc.ParameterValueType.NUMBER
+
+    assert rc.value_to_type(True) == rc.ParameterValueType.BOOLEAN
+    assert rc.value_to_type(False) == rc.ParameterValueType.BOOLEAN
+
+def test_value_str():
+    assert rc.value_to_str("test") == "test"
+
+    assert rc.value_to_str(1) == "1"
+    assert rc.value_to_str(-1) == "-1"
+
+    assert rc.value_to_str(1.0) == "1.0"
+    assert rc.value_to_str(-1.0) == "-1.0"
+
+    assert rc.value_to_str(True) == "true"
+    assert rc.value_to_str(False) == "false"
