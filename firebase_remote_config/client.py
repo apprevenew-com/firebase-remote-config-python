@@ -24,11 +24,16 @@ class RemoteConfigClient:
         self.credentials = credentials
         self.url = f"{FIREBASE_REMOTE_CONFIG_URL}/{project_id}/remoteConfig"
 
-    def _call_get_remote_config(self) -> requests.Response:
+    def _call_get_remote_config(self, version_number: Optional[str] = None) -> requests.Response:
         access_token = get_oauth_token(self.credentials)
         headers = make_headers(access_token)
 
-        response = requests.request(method="get", url=self.url, headers=headers)
+        if version_number is not None:
+            params = {"versionNumber": version_number}
+        else:
+            params = None
+
+        response = requests.request(method="get", url=self.url, headers=headers, params=params)
         return response
 
     def _call_update_remote_config(self, rc: RemoteConfig, validate_only: bool) -> requests.Response:
@@ -64,8 +69,8 @@ class RemoteConfigClient:
 
     # API methods
 
-    def get_remote_config(self) -> RemoteConfig:
-        response = self._call_get_remote_config()
+    def get_remote_config(self, version_number: Optional[str] = None) -> RemoteConfig:
+        response = self._call_get_remote_config(version_number)
         if response.status_code != 200:
             raise exceptions.UnexpectedError(f"Unexpected error: {response.text}")
         return make_remote_config(response)
@@ -111,6 +116,7 @@ class RemoteConfigClient:
         if response.status_code != 200:
             raise exceptions.UnexpectedError(f"Unexpected error: {response.text}")
         return make_remote_config(response)
+
 
 # Utils
 
