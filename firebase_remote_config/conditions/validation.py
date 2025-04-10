@@ -121,6 +121,17 @@ def validate_element_condition(name: enums.ElementName, key: Optional[str], op: 
                 allowed_ops = [enums.ElementOperatorBinary.EQ]
             elif name == enums.ElementName.DEVICE_OS:
                 allowed_ops = [enums.ElementOperatorBinary.EQ, enums.ElementOperatorBinary.NEQ]
+
+            elif name == enums.ElementName.APP_AUDIENCES:
+                allowed_ops = list(enums.ElementOperatorMethodAudiences)
+                raise ValueError(f"Single str value is not supported by {name.value} and {op.value}. Must be passed as array and operator must be one of: {', '.join([o.value for o in allowed_ops])}")
+            elif name in [enums.ElementName.APP_USER_PROPERTY, enums.ElementName.APP_CUSTOM_SIGNAL]:
+                allowed_ops = list(enums.ElementOperatorMethodString)
+                raise ValueError(f"Single str value is not supported by {name.value} and {op.value}. Must be passed as array and operator must be one of: {', '.join([o.value for o in allowed_ops])}")
+            elif name in [enums.ElementName.APP_FIREBASE_INSTALLATION_ID, enums.ElementName.DEVICE_COUNTRY, enums.ElementName.DEVICE_LANGUAGE]:
+                allowed_ops = list(enums.ElementOperatorBinaryArray)
+                raise ValueError(f"Single str value is not supported by {name.value} and {op.value}. Must be passed as array and operator must be one of: {', '.join([o.value for o in allowed_ops])}")
+
             else:
                 allowed_names = [
                     enums.ElementName.APP_BUILD,
@@ -175,12 +186,12 @@ def validate_element_condition(name: enums.ElementName, key: Optional[str], op: 
             allowed_ops = list(enums.ElementOperatorMethodString)
         elif name == enums.ElementName.APP_AUDIENCES:
             allowed_ops = list(enums.ElementOperatorMethodAudiences)
-        elif name == enums.ElementName.APP_FIREBASE_INSTALLATION_ID:
-            allowed_ops = list(enums.ElementOperatorBinaryArray)
         elif name == enums.ElementName.APP_USER_PROPERTY:
             allowed_ops = list(enums.ElementOperatorMethodString)
         elif name == enums.ElementName.APP_CUSTOM_SIGNAL:
             allowed_ops = list(enums.ElementOperatorMethodString)
+        elif name == enums.ElementName.APP_FIREBASE_INSTALLATION_ID:
+            allowed_ops = list(enums.ElementOperatorBinaryArray)
         elif name == enums.ElementName.DEVICE_COUNTRY:
             allowed_ops = list(enums.ElementOperatorBinaryArray)
         elif name == enums.ElementName.DEVICE_LANGUAGE:
