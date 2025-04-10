@@ -68,7 +68,7 @@ new_param = rc.RemoteConfigParameter(
 config.template.parameters["new_parameter"] = new_param
 
 # find parameter in the template
-param = config.find_param_by_key("new_parameter")
+param = config.get_parameter_by_key("new_parameter")
 param.description = "My new parameter"
 ```
 

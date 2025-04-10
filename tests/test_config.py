@@ -56,7 +56,7 @@ def test_iterate():
     assert len(list(config.iterate_parameter_items())) == 3
 
 
-def test_find():
+def test_get():
     config = get_config()
 
     assert config.get_condition_by_name("condition_1").name == "condition_1"
