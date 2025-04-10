@@ -1,4 +1,5 @@
 from datetime import datetime
+from itertools import chain
 from typing import Optional
 
 import pyparsing as pp
@@ -164,3 +165,16 @@ class ConditionParser():
 
 def get_grammar() -> str:
     return str(pattern)
+
+
+def get_grammar_element(el_name_value: str, op_value: str) -> Optional[str]:
+    el_name = enums.ElementName(el_name_value)
+
+    ops = chain(enums.ElementOperatorBinary, enums.ElementOperatorMethodString, enums.ElementOperatorMethodSemantic, enums.ElementOperatorBinaryArray, enums.ElementOperatorMethodAudiences)
+    op = next(op for op in ops if op.value == op_value)
+
+    if not supported(el_name, op):
+        return None
+
+    expr = make_element_condition(el_name, op)
+    return str(expr)

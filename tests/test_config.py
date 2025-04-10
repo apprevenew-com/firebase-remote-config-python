@@ -59,11 +59,11 @@ def test_iterate():
 def test_find():
     config = get_config()
 
-    assert config.find_condition_by_name("condition_1").name == "condition_1"
-    assert config.find_condition_by_name("condition_2").name == "condition_2"
-    assert config.find_parameter_by_key("test_param_1").defaultValue.value == "test_value_1_default"
-    assert config.find_parameter_by_key("test_param_2").defaultValue.value == "test_value_2_default"
-    assert config.find_parameter_by_key("test_param_3").defaultValue.value == "test_value_3_default"
+    assert config.get_condition_by_name("condition_1").name == "condition_1"
+    assert config.get_condition_by_name("condition_2").name == "condition_2"
+    assert config.get_parameter_by_key("test_param_1").defaultValue.value == "test_value_1_default"
+    assert config.get_parameter_by_key("test_param_2").defaultValue.value == "test_value_2_default"
+    assert config.get_parameter_by_key("test_param_3").defaultValue.value == "test_value_3_default"
 
 
 def test_crd():
@@ -71,7 +71,7 @@ def test_crd():
 
     # insert new condition
 
-    config.insert_condition(
+    config.create_condition(
         rc.RemoteConfigCondition(
             name="new_condition",
             expression="device.os == 'ios'",
@@ -88,14 +88,17 @@ def test_crd():
     config.set_conditional_value(
         "test_param_1",
         rc.RemoteConfigParameterValue(value="new_test_value"),
-        rc.ParameterValueType.STRING,
         "new_condition",
+    )
+
+    config.create_empty_parameter(
+        "new_test_param",
+        rc.ParameterValueType.STRING,
     )
 
     config.set_conditional_value(
         "new_test_param",
         rc.RemoteConfigParameterValue(value="new_test_value"),
-        rc.ParameterValueType.STRING,
         "new_condition",
     )
 

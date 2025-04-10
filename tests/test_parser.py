@@ -1,4 +1,5 @@
 import firebase_remote_config.conditions as cond
+import firebase_remote_config.conditions.enums as enums
 
 
 def test_valid_conditions():
@@ -13,7 +14,7 @@ def test_valid_conditions():
         "app.firstOpenTimestamp <= ('2025-01-01T09:00:00')",
         "app.build.>=(['1.0.0']) && app.version.contains(['1.0.', '2.1.0'])",
         "device.language in ['en-US', 'RU'] && device.country in ['GB', 'AU', 'CA']",
-        "dateTime < dateTime('2025-01-01T09:02:30') && dateTime >= dateTime('2025-01-01T09:02:30', 'UTC')",
+        "dateTime < dateTime('2025-01-01T09:02:30') && dateTime >= dateTime('2025-01-01T09:02:30', 'UTC')"
     ]
 
     for case_str in test_cases_valid:
@@ -66,3 +67,9 @@ def test_invalid_conditions():
 def test_get_grammar_method():
     grammar = cond.get_grammar()
     assert len(grammar) > 0
+
+    expr = cond.get_grammar_element(enums.ElementName.APP_FIRST_OPEN_TIMESTAMP.value, enums.ElementOperatorBinary.GT.value)
+    assert expr == "{'app.firstOpenTimestamp' '>'} {'(' {string enclosed in \"'\" [',' string enclosed in \"'\"]} ')'}"
+
+    expr = cond.get_grammar_element(enums.ElementName.APP_FIRST_OPEN_TIMESTAMP.value, enums.ElementOperatorBinary.GTE.value)
+    assert expr is None

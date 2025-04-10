@@ -10,10 +10,6 @@ class UnexpectedError(Exception):
     pass
 
 
-class WrongValueTypeError(Exception):
-    pass
-
-
 class ConditionAlreadyExistsError(Exception):
     pass
 
@@ -23,6 +19,9 @@ class ConditionNotFoundError(Exception):
 
 
 class ParameterAlreadyExistsError(Exception):
+    pass
+
+class ParameterNotFoundError(Exception):
     pass
 
 

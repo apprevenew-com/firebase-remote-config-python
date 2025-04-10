@@ -62,15 +62,24 @@ class RemoteConfigParameter(BaseModel):
     valueType: ParameterValueType
 
     def remove_conditional_values(self, condition_names: List[str]) -> None:
+        """
+        Remove conditional values by their condition names.
+        :param condition_names List[str]: List of condition names to remove.
+        """
         if not self.conditionalValues:
             return
 
         self.conditionalValues = {key: c for key, c in self.conditionalValues.items() if key not in condition_names}
 
-    def set_conditional_value(self, param_value: RemoteConfigParameterValue, param_value_type: ParameterValueType, condition_name: str, overwrite: bool = True) -> None:
-        if self.valueType != param_value_type:
-            raise exceptions.WrongValueTypeError(f"Wrong value type. Existing type: {self.valueType.name}, new type: {param_value_type.name}")
-
+    def set_conditional_value(self, param_value: RemoteConfigParameterValue, condition_name: str, overwrite: bool = True) -> None:
+        """
+        Set a conditional value for a parameter.
+        :param param_value RemoteConfigParameterValue: Parameter value.
+        :param condition_name str: Condition name.
+        :param overwrite Optional[bool]: Sets behavior when the parameter already has a conditional value with given condition name. True = overwrite, False = raise Exception.
+        Raises:
+            ConditionalValueAlreadySetError: If the parameter already has a conditional value with the given condition name and overwrite is False.
+        """
         if not self.conditionalValues:
             self.conditionalValues = {}
 
@@ -152,7 +161,10 @@ class ListVersionsParameters(BaseModel):
 class RollbackRequest(BaseModel):
     versionNumber: str
 
+# Custom classes
+
 class RemoteConfigError(BaseModel):
+    """Error model for Remote Config API responses."""
     code: int
     message: str
     status: str
@@ -167,14 +179,20 @@ class RemoteConfigError(BaseModel):
             raise exceptions.UnexpectedError(f"Unexpected error: {self.message}")
 
 class RemoteConfigResponse(BaseModel):
+    """Response model for Remote Config API responses."""
     error: Optional[RemoteConfigError] = None
 
-# Internal remote config class
 class RemoteConfig(BaseModel):
+    """Main config model."""
     template: RemoteConfigTemplate
     etag: str
 
-    def insert_condition(self, condition: RemoteConfigCondition, insert_after_condition: Optional[str] = None) -> None:
+    def create_condition(self, condition: RemoteConfigCondition, insert_after_condition: Optional[str] = None) -> None:
+        """
+        Create a new condition.
+        :param condition RemoteConfigCondition: Condition to create.
+        :param insert_after_condition Optional[str]: Condition name after which to insert the new condition.
+        """
         existing_conditions = self.template.conditions
         existing_conditions_names = [c.name for c in existing_conditions]
 
@@ -202,21 +220,49 @@ class RemoteConfig(BaseModel):
             ]
 
     def remove_conditions(self, condition_names: List[str]) -> None:
+        """
+        Remove conditions by their names.
+        :param condition_names List[str]: List of condition names to remove.
+        """
         self.template.conditions = [c for c in self.template.conditions if c.name not in condition_names]
 
         # after deleting conditions we need to clean up orphan params
         for _, param in self.iterate_parameter_items():
             param.remove_conditional_values(condition_names)
 
-    def set_conditional_value(self, param_key: str, param_value: RemoteConfigParameterValue, param_value_type: ParameterValueType, condition_name: str) -> None:
-        param = self.find_parameter_by_key(param_key)
+    def set_conditional_value(
+            self,
+            param_key: str,
+            param_value: RemoteConfigParameterValue,
+            condition_name: str,
+            overwrite: Optional[bool] = True,
+    ) -> None:
+        """
+        Set a conditional value for a parameter.
+        :param param_key str: Parameter key.
+        :param param_value RemoteConfigParameterValue: Parameter value.
+        :param condition_name str: Condition name.
+        :param overwrite Optional[bool]: Sets behavior when the parameter already has a conditional value with given condition name. True = overwrite, False = raise Exception.
+        Raises:
+            ParameterNotFoundError: If the parameter is not found.
+            ConditionalValueAlreadySetError: If the parameter already has a conditional value with the given condition name and overwrite is False.
+        """
+        param = self.get_parameter_by_key(param_key)
         if not param:
-            param = self.create_empty_parameter(param_key, param_value_type)
+            raise exceptions.ParameterNotFoundError(f"Parameter {param_key} not found")
 
-        param.set_conditional_value(param_value, param_value_type, condition_name)
+        param.set_conditional_value(param_value, condition_name, overwrite)
 
-    def remove_conditional_value(self, param_key: str, condition_names: List[str], skip_missing: bool = True) -> None:
-        param = self.find_parameter_by_key(param_key)
+    def remove_conditional_value(self, param_key: str, condition_names: List[str], skip_missing: bool = False) -> None:
+        """
+        Remove conditional values by their condition names.
+        :param param_key str: Parameter key.
+        :param condition_names List[str]: List of condition names to remove.
+        :param skip_missing Optional[bool]: Sets behavior when the parameter is not found. True = skip, False = raise Exception.
+        Raises:
+            ParameterNotFoundError: If the parameter is not found and skip_missing is False.
+        """
+        param = self.get_parameter_by_key(param_key)
         if not param and not skip_missing:
             raise exceptions.ParameterNotFoundError(f"Parameter {param_key} not found")
 
@@ -229,6 +275,13 @@ class RemoteConfig(BaseModel):
         param_descr: Optional[str] = None,
         param_group_key: Optional[str] = None,
     ) -> RemoteConfigParameter:
+        """
+        Create an empty parameter.
+        :param param_key str: Parameter key.
+        :param param_value_type ParameterValueType: Parameter value type.
+        :param param_descr Optional[str]: Parameter description.
+        :param param_group_key Optional[str]: Parameter group key.
+        """
         if param_key in self.template.parameters:
             raise exceptions.ParameterAlreadyExistsError(f"Parameter {param_key} already exists")
 
@@ -263,26 +316,52 @@ class RemoteConfig(BaseModel):
         return param
 
     def iterate_parameter_items(self) -> Iterator[Tuple[str, RemoteConfigParameter]]:
+        """
+        Iterates over all parameters (with keys) in the config template.
+        """
         for tpl in chain(self.template.parameters.items(), *[pg.parameters.items() for pg in self.template.parameterGroups.values()]):
             yield tpl
 
     def iterate_conditions(self) -> Iterator[RemoteConfigCondition]:
+        """
+        Iterates over all conditions in the config template.
+        """
         for condition in self.template.conditions:
             yield condition
 
-    def find_parameter_by_key(self, key: str) -> Optional[RemoteConfigParameter]:
+    def get_parameter_by_key(self, key: str) -> Optional[RemoteConfigParameter]:
+        """
+        Gets a parameter by its key.
+        :param key str: Parameter key.
+        :return Optional[RemoteConfigParameter]: Parameter object or None if not found.
+        """
         return next((param for (param_key, param) in self.iterate_parameter_items() if param_key == key), None)
 
-    def find_condition_by_name(self, name: str) -> Optional[RemoteConfigCondition]:
+    def get_condition_by_name(self, name: str) -> Optional[RemoteConfigCondition]:
+        """
+        Gets a condition by its name.
+        :param name str: Condition name.
+        :return Optional[RemoteConfigCondition]: Condition object or None if not found.
+        """
         return next((c for c in self.iterate_conditions() if c.name == name), None)
 
 # helper utils
 
 def is_number(v: Union[str, int, float, bool]) -> bool:
+    """
+    Checks if the value is a number.
+    :param v Union[str, int, float, bool]: Value to check.
+    :return bool: True if the value is a number, False otherwise.
+    """
     return type(v) is int or type(v) is float
 
 
 def is_json(v: Union[str, int, float, bool]) -> bool:
+    """
+    Checks if the value is a JSON object.
+    :param v Union[str, int, float, bool]: Value to check.
+    :return bool: True if the value is a JSON object, False otherwise.
+    """
     if type(v) is not str:
         return False
     try:
@@ -296,16 +375,31 @@ def is_json(v: Union[str, int, float, bool]) -> bool:
 
 
 def is_str(v: Union[str, int, float, bool]) -> bool:
+    """
+    Checks if the value is a string (JSON string is not considered a string).
+    :param v Union[str, int, float, bool]: Value to check.
+    :return bool: True if the value is a string, False otherwise.
+    """
     if type(v) is not str:
         return False
     return not is_json(v)
 
 
 def is_bool(v: Union[str, int, float, bool]) -> bool:
+    """
+    Checks if the value is a boolean.
+    :param v Union[str, int, float, bool]: Value to check.
+    :return bool: True if the value is a boolean, False otherwise.
+    """
     return type(v) is bool
 
 
 def value_to_type(v: Union[str, int, float, bool]) -> ParameterValueType:
+    """
+    Converts a value to a parameter value type.
+    :param v Union[str, int, float, bool]: Value to convert.
+    :return ParameterValueType: Parameter value type.
+    """
     if is_number(v):
         value_type = ParameterValueType.NUMBER
     elif is_bool(v):
@@ -320,6 +414,11 @@ def value_to_type(v: Union[str, int, float, bool]) -> ParameterValueType:
 
 
 def value_to_str(v: Union[str, int, float, bool]) -> str:
+    """
+    Converts a value to a string.
+    :param v Union[str, int, float, bool]: Value to convert.
+    :return str: String representation of the value.
+    """
     if type(v) is bool:
         return "true" if v else "false"
     return str(v)
