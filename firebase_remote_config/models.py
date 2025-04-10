@@ -64,17 +64,17 @@ class RemoteConfigParameter(BaseModel):
     def remove_conditional_values(self, condition_names: List[str]) -> None:
         if not self.conditionalValues:
             return
+
         self.conditionalValues = {key: c for key, c in self.conditionalValues.items() if key not in condition_names}
 
-    def set_conditional_value(self, param_value: RemoteConfigParameterValue, param_value_type: ParameterValueType, condition_name: str) -> None:
+    def set_conditional_value(self, param_value: RemoteConfigParameterValue, param_value_type: ParameterValueType, condition_name: str, overwrite: bool = True) -> None:
         if self.valueType != param_value_type:
             raise exceptions.WrongValueTypeError(f"Wrong value type. Existing type: {self.valueType.name}, new type: {param_value_type.name}")
 
         if not self.conditionalValues:
             self.conditionalValues = {}
 
-        if condition_name in self.conditionalValues:
-            # TODO: just warn if already exists?
+        if condition_name in self.conditionalValues and not overwrite:
             raise exceptions.ConditionalValueAlreadySetError(f"Conditional value for {condition_name} already set")
 
         self.conditionalValues[condition_name] = param_value
@@ -209,12 +209,18 @@ class RemoteConfig(BaseModel):
             param.remove_conditional_values(condition_names)
 
     def set_conditional_value(self, param_key: str, param_value: RemoteConfigParameterValue, param_value_type: ParameterValueType, condition_name: str) -> None:
-        param = self.find_param_by_key(param_key)
-
+        param = self.find_parameter_by_key(param_key)
         if not param:
             param = self.create_empty_parameter(param_key, param_value_type)
 
         param.set_conditional_value(param_value, param_value_type, condition_name)
+
+    def remove_conditional_value(self, param_key: str, condition_names: List[str], skip_missing: bool = True) -> None:
+        param = self.find_parameter_by_key(param_key)
+        if not param and not skip_missing:
+            raise exceptions.ParameterNotFoundError(f"Parameter {param_key} not found")
+
+        param.remove_conditional_values(condition_names)
 
     def create_empty_parameter(
         self,
@@ -256,19 +262,6 @@ class RemoteConfig(BaseModel):
 
         return param
 
-    def find_param_by_key(self, key: str) -> Optional[RemoteConfigParameter]:
-        # search in parameters
-        param = self.template.parameters.get(key)
-
-        # search in parameter groups
-        for pg in self.template.parameterGroups.values():
-            param = param or pg.parameters.get(key)
-
-        return param
-
-    def find_condition_by_name(self, condition_name: str) -> Optional[RemoteConfigCondition]:
-        return next((c for c in self.iterate_conditions() if c.name == condition_name), None)
-
     def iterate_parameter_items(self) -> Iterator[Tuple[str, RemoteConfigParameter]]:
         for tpl in chain(self.template.parameters.items(), *[pg.parameters.items() for pg in self.template.parameterGroups.values()]):
             yield tpl
@@ -276,6 +269,12 @@ class RemoteConfig(BaseModel):
     def iterate_conditions(self) -> Iterator[RemoteConfigCondition]:
         for condition in self.template.conditions:
             yield condition
+
+    def find_parameter_by_key(self, key: str) -> Optional[RemoteConfigParameter]:
+        return next((param for (param_key, param) in self.iterate_parameter_items() if param_key == key), None)
+
+    def find_condition_by_name(self, name: str) -> Optional[RemoteConfigCondition]:
+        return next((c for c in self.iterate_conditions() if c.name == name), None)
 
 # helper utils
 
