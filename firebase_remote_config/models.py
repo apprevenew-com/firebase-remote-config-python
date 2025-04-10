@@ -287,10 +287,13 @@ def is_json(v: Union[str, int, float, bool]) -> bool:
     if type(v) is not str:
         return False
     try:
-        json.loads(v)
-        return True
+        res = json.loads(v)
+        if type(res) is dict:
+            return True
     except ValueError:  # json decoding failed
-        return False
+        pass
+
+    return False
 
 
 def is_str(v: Union[str, int, float, bool]) -> bool:

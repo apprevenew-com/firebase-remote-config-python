@@ -104,8 +104,13 @@ def test_crd():
 
 def test_value_to_type():
     assert rc.value_to_type("test") == rc.ParameterValueType.STRING
+    assert rc.value_to_type("true") == rc.ParameterValueType.STRING
+    assert rc.value_to_type("false") == rc.ParameterValueType.STRING
+    assert rc.value_to_type("123") == rc.ParameterValueType.STRING
+    assert rc.value_to_type("1.0") == rc.ParameterValueType.STRING
 
     assert rc.value_to_type('{"key": "value"}') == rc.ParameterValueType.JSON
+    assert rc.value_to_type('{"key": true, "key2": {"key3": 123}}') == rc.ParameterValueType.JSON
 
     assert rc.value_to_type(1) == rc.ParameterValueType.NUMBER
     assert rc.value_to_type(-1) == rc.ParameterValueType.NUMBER
