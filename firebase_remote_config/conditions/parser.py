@@ -101,7 +101,7 @@ def make_element_condition(el_name: enums.ElementName, op: enums.ElementOperator
     """Returns ParserElement for element condition for the provided element name and operator."""
     expr = pp.Keyword(el_name.value)("element")
 
-    if valid.supports_key(el_name):
+    if valid.must_have_key(el_name):
         expr = expr + in_brackets(literal_str("key"))
 
     if valid.has_method_syntax(op):

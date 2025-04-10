@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Union
 
@@ -75,3 +76,6 @@ class PercentConditionOperator(Enum):
     BETWEEN = "BETWEEN"  # Matches if the user percentage is between lower and upper bound
     GREATER_THAN = ">"  # Matches if the user percentage is greater than provided value
     LESS_OR_EQUAL = "<="  # Matches if the user percentage is less than or equal to provided value
+
+
+CustomValue = Union[str, int, float, datetime]

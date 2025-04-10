@@ -11,22 +11,7 @@ from . import validation as valid
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 
-# custom value type
-
-CustomValue = Union[str, int, float, datetime]
-
-
-def is_str(v: CustomValue):
-    """Checks if CustomValue is a string."""
-    return type(v) is str
-
-
-def is_number(v: CustomValue):
-    """Checks if CustomValue is a number."""
-    return type(v) is int or type(v) is float
-
-
-def str_custom_value(v: CustomValue) -> str:
+def str_custom_value(v: enums.CustomValue) -> str:
     """Converts CustomValue to a string."""
     if type(v) is str:
         return f"'{v}'"
@@ -75,32 +60,12 @@ class ElementCondition(BaseModel):
 
     element: Element  # Element with optional key.
     operator: enums.ElementOperator  # The choice of custom operator to determine how to compare targets to value(s).
-    values: Optional[Annotated[List[CustomValue], Field(min_length=1, max_length=100)]] = None  # A list of at most 100 target custom values
-    value: Optional[CustomValue] = None  # A single target custom value
+    values: Optional[Annotated[List[enums.CustomValue], Field(min_length=1, max_length=100)]] = None  # A list of at most 100 target custom values
+    value: Optional[enums.CustomValue] = None  # A single target custom value
 
     @model_validator(mode="after")
     def validate(self):
-        """Validates the ElementCondition."""
-        if valid.needs_single_value(self.operator) and self.value is None:
-            raise ValueError(f"single value must be provided when using {self.operator.name}")
-
-        if not valid.needs_single_value(self.operator) and self.values is None:
-            raise ValueError(f"values array must be provided when using {self.operator.name}")
-
-        if not valid.supports_name_operator(self.element.name, self.operator):
-            raise ValueError(f"provided combination of element ({self.element.name.name}) and operator ({self.operator.name}) is not supported")
-
-        if self.element.key and not valid.supports_key(self.element.name):
-            raise ValueError(f"{self.element.name.name} element name does not support key")
-
-        values_contain_str = (self.values and any([is_str(v) for v in self.values])) or is_str(self.value)
-        if values_contain_str and not valid.supports_value_str(self.element.name, self.operator):
-            raise ValueError(f"provided combination of element ({self.element.name.name}) and operator ({self.operator.name}) does not support str values")
-
-        values_contain_number = (self.values and any([is_number(v) for v in self.values])) or is_number(self.value)
-        if values_contain_number and not valid.supports_value_number(self.element.name, self.operator):
-            raise ValueError(f"provided combination of element ({self.element.name.name}) and operator ({self.operator.name}) does not support number values")
-
+        valid.validate_element_condition(self.element.name, self.element.key, self.operator, self.value, self.values)
         return self
 
     def __repr__(self):

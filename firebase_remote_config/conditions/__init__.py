@@ -3,7 +3,6 @@ from .conditions import (
     AndCondition,
     AtomCondition,
     Condition,
-    CustomValue,
     Element,
     ElementCondition,
     FalseCondition,
@@ -14,6 +13,7 @@ from .conditions import (
     str_custom_value,
 )
 from .enums import (
+    CustomValue,
     ElementName,
     ElementOperator,
     ElementOperatorBinary,
