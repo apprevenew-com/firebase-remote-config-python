@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "firebase-remote-config"
-version = "0.1.8"
+version = "0.1.9"
 description = "Firebase Remote Config SDK"
 authors = [
   { name="Dmitry Kaysin", email="kaysin.dmitry@gmail.com" }
