@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
 
 import google.auth.transport.requests
 import requests
@@ -13,7 +13,6 @@ from .models import (
     RemoteConfigResponse,
     RemoteConfigTemplate,
     RollbackRequest,
-    Version,
 )
 
 FIREBASE_REMOTE_CONFIG_URL = "https://firebaseremoteconfig.googleapis.com/v1/projects"
@@ -96,7 +95,7 @@ class RemoteConfigClient:
             end_version_number: Optional[str] = None,
             start_time: Optional[datetime] = None,
             end_time: Optional[datetime] = None,
-    ) -> Tuple[List[Version], Optional[str]]:
+    ) -> ListVersionsResponse:
         params = ListVersionsParameters(
             pageSize=page_size,
             pageToken=page_token,
