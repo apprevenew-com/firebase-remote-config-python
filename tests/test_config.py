@@ -56,6 +56,16 @@ def test_iterate():
     assert len(list(config.iterate_parameter_items())) == 3
 
 
+def test_find():
+    config = get_config()
+
+    assert config.find_condition_by_name("condition_1").name == "condition_1"
+    assert config.find_condition_by_name("condition_2").name == "condition_2"
+    assert config.find_parameter_by_key("test_param_1").defaultValue.value == "test_value_1_default"
+    assert config.find_parameter_by_key("test_param_2").defaultValue.value == "test_value_2_default"
+    assert config.find_parameter_by_key("test_param_3").defaultValue.value == "test_value_3_default"
+
+
 def test_crd():
     config = get_config()
 
@@ -90,6 +100,12 @@ def test_crd():
     )
 
     assert config.template.parameters["test_param_1"].conditionalValues["new_condition"].value == "new_test_value"
+    assert config.template.parameters["new_test_param"].conditionalValues["new_condition"].value == "new_test_value"
+
+    # remove conditional value
+
+    config.remove_conditional_value("test_param_1", ["new_condition"], skip_missing=False)
+    assert "new_condition" not in config.template.parameters["test_param_1"].conditionalValues
 
     # remove condition and check that condition values are also removed
 
