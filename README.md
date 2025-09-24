@@ -85,8 +85,8 @@ condition = rc.RemoteConfigCondition(
     tagColor=rc.TagColor.BLUE,
 )
 
-# Insert condition to rconfig template
-config.insert_condition(condition)
+# Create condition in rconfig template
+config.create_condition(condition)
 
 # Use newly created condition in a conditional value
 config.set_conditional_value(
@@ -115,8 +115,8 @@ cond_expr = builder.build()
 cond_expr_str = str(cond_expr)
 # app.version.>=(['1.2.0']) && app.userProperty['total_purchases_usd'] >= 5 && device.country in ['US', 'CA']
 
-# Insert condition to remote config template
-config.insert_condition(rc.RemoteConfigCondition(
+# Create condition in remote config template
+config.create_condition(rc.RemoteConfigCondition(
     name="active_premium_users",
     expression=cond_expr_str,
     tagColor=rc.TagColor.GREEN,
