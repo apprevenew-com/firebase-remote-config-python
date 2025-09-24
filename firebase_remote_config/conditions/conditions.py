@@ -60,7 +60,7 @@ class ElementCondition(BaseModel):
 
     element: Element  # Element with optional key.
     operator: enums.ElementOperator  # The choice of custom operator to determine how to compare targets to value(s).
-    values: Optional[Annotated[List[enums.CustomValue], Field(min_length=1, max_length=100)]] = None  # A list of at most 100 target custom values
+    values: Optional[Annotated[List[enums.CustomValue], Field(min_length=1)]] = None  # A list of target custom values
     value: Optional[enums.CustomValue] = None  # A single target custom value
 
     @model_validator(mode="after")
