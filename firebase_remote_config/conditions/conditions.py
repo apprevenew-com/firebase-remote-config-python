@@ -28,6 +28,10 @@ def str_custom_value(v: enums.CustomValue) -> str:
 
         if v.tzinfo:
             tz_str = datetime.tzname(v)
+
+            if tz_str == "GMT":
+                tz_str = "Etc/GMT"  # Firebase Remote Config uses Etc/GMT for GMT
+
             parts = [v_str, tz_str]
 
         parts = [f"'{p}'" for p in parts]
