@@ -354,10 +354,9 @@ class RemoteConfig(BaseModel):
         Raises:
             ConditionNotFoundError: If the condition is not found and ignore_missing is False.
         """
-        if not ignore_missing:
-            condition = self.get_condition_by_name(name)
-            if not condition:
-                raise exceptions.ConditionNotFoundError(f"Condition {name} not found")
+        condition = self.get_condition_by_name(name)
+        if not condition and not ignore_missing:
+            raise exceptions.ConditionNotFoundError(f"Condition {name} not found")
 
         self.template.conditions = [new_condition if c.name == name else c for c in self.template.conditions]
 
