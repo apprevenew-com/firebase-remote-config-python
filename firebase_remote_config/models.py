@@ -351,6 +351,8 @@ class RemoteConfig(BaseModel):
         :param name str: Condition name.
         :param new_condition RemoteConfigCondition: New condition to replace with.
         :param ignore_missing bool: If True, does not raise an exception if the condition is not found.
+        Raises:
+            ConditionNotFoundError: If the condition is not found and ignore_missing is False.
         """
         if not ignore_missing:
             condition = self.get_condition_by_name(name)
