@@ -121,6 +121,81 @@ def test_crd():
     assert len(config.template.parameters["test_param_1"].conditionalValues.values()) == 2
     assert config.template.parameters["new_test_param"].conditionalValues == {}
 
+def test_no_parameters():
+    # this is a valid config even if there are no parameters
+    config = rc.RemoteConfig(
+        template=rc.RemoteConfigTemplate(
+            conditions=[
+                rc.RemoteConfigCondition(
+                    name="condition_1",
+                    expression="app.version.>(['1.0.0'])",
+                    tagColor=rc.TagColor.GREEN,
+                ),
+                rc.RemoteConfigCondition(
+                    name="condition_2",
+                    expression="device.language in ['en-US', 'de-DE']",
+                    tagColor=rc.TagColor.BLUE,
+                ),
+            ],
+            parameterGroups={
+                "pg1": rc.RemoteConfigParameterGroup(
+                    parameters={
+                        "test_param_1": rc.RemoteConfigParameter(
+                            defaultValue=rc.RemoteConfigParameterValue(value="test_value_1_default"),
+                            valueType=rc.ParameterValueType.STRING,
+                        ),
+                        "test_param_2": rc.RemoteConfigParameter(
+                            defaultValue=rc.RemoteConfigParameterValue(value="test_value_2_default"),
+                            valueType=rc.ParameterValueType.STRING,
+                        ),
+                    },
+                ),
+            },
+        ),
+        etag="test",
+    )
+    assert len(config.template.parameterGroups) == 1
+
+    parameter_names = [param_key for param_key, _ in config.iterate_parameter_items()]
+    assert len(parameter_names) == 2
+    assert "test_param_1" in parameter_names
+    assert "test_param_2" in parameter_names
+
+    # this is a valid config even if there are no parameter groups
+    config = rc.RemoteConfig(
+        template=rc.RemoteConfigTemplate(
+            conditions=[
+                rc.RemoteConfigCondition(
+                    name="condition_1",
+                    expression="app.version.>(['1.0.0'])",
+                    tagColor=rc.TagColor.GREEN,
+                ),
+                rc.RemoteConfigCondition(
+                    name="condition_2",
+                    expression="device.language in ['en-US', 'de-DE']",
+                    tagColor=rc.TagColor.BLUE,
+                ),
+            ],
+            parameters={
+                "test_param_1": rc.RemoteConfigParameter(
+                    defaultValue=rc.RemoteConfigParameterValue(value="test_value_1_default"),
+                    valueType=rc.ParameterValueType.STRING,
+                ),
+                "test_param_2": rc.RemoteConfigParameter(
+                    defaultValue=rc.RemoteConfigParameterValue(value="test_value_2_default"),
+                    valueType=rc.ParameterValueType.STRING,
+                ),
+            },
+        ),
+        etag="test",
+    )
+    assert len(config.template.parameterGroups) == 0
+
+    parameter_names = [param_key for param_key, _ in config.iterate_parameter_items()]
+    assert len(parameter_names) == 2
+    assert "test_param_1" in parameter_names
+    assert "test_param_2" in parameter_names
+
 def test_value_to_type():
     assert rc.value_to_type("test") == rc.ParameterValueType.STRING
     assert rc.value_to_type("true") == rc.ParameterValueType.STRING
