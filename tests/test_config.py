@@ -121,6 +121,29 @@ def test_crd():
     assert len(config.template.parameters["test_param_1"].conditionalValues.values()) == 2
     assert config.template.parameters["new_test_param"].conditionalValues == {}
 
+def test_replace_condition():
+    config = get_config()
+
+    # replace condition
+
+    config.replace_condition(
+        "condition_2",
+        rc.RemoteConfigCondition(
+            name="replaced_condition",
+            expression="device.os == 'android'",
+        ),
+    )
+
+    assert len(config.template.conditions) == 2
+    assert config.template.conditions[0].name == "condition_1"
+    assert config.template.conditions[1].name == "replaced_condition"
+    assert config.template.conditions[1].expression == "device.os == 'android'"
+
+    # check that conditional values are replaced
+    cv = config.template.parameters["test_param_1"].conditionalValues
+    assert "condition_2" not in cv
+    assert cv["replaced_condition"].value == "test_value_1_c2"
+
 def test_value_to_type():
     assert rc.value_to_type("test") == rc.ParameterValueType.STRING
     assert rc.value_to_type("true") == rc.ParameterValueType.STRING
