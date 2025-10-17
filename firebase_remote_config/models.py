@@ -364,6 +364,9 @@ class RemoteConfig(BaseModel):
 
         # replace all conditional values of the old condition with the new condition
         for _, param in self.iterate_parameter_items():
+            if not param.conditionalValues:
+                continue
+
             cond_value = param.conditionalValues.get(name)
             if not cond_value:
                 continue
