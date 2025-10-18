@@ -345,6 +345,37 @@ class RemoteConfig(BaseModel):
         """
         return next((c for c in self.iterate_conditions() if c.name == name), None)
 
+    def replace_condition(self, name: str, new_condition: RemoteConfigCondition, ignore_missing: bool = True) -> None:
+        """
+        Replaces a condition with a given name by a new condition.
+        :param name str: Condition name.
+        :param new_condition RemoteConfigCondition: New condition to replace with.
+        :param ignore_missing bool: If True, does not raise an exception if the condition is not found.
+        Raises:
+            ConditionNotFoundError: If the condition is not found and ignore_missing is False.
+        """
+        condition = self.get_condition_by_name(name)
+        if not condition and not ignore_missing:
+            raise exceptions.ConditionNotFoundError(f"Condition {name} not found")
+
+        self.template.conditions = [new_condition if c.name == name else c for c in self.template.conditions]
+
+        if name == new_condition.name:
+            return
+
+        # replace all conditional values of the old condition with the new condition
+        for _, param in self.iterate_parameter_items():
+            if not param.conditionalValues:
+                continue
+
+            cond_value = param.conditionalValues.get(name)
+            if not cond_value:
+                continue
+
+            param.remove_conditional_values([name])
+            param.set_conditional_value(cond_value, new_condition.name)
+
+
 # helper utils
 
 def is_number(v: Union[str, int, float, bool]) -> bool:
