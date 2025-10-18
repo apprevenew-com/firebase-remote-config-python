@@ -139,9 +139,9 @@ class ListVersionsResponse(BaseModel):
 # https://firebase.google.com/docs/reference/remote-config/rest/v1/RemoteConfig
 class RemoteConfigTemplate(BaseModel):
     conditions: List[RemoteConfigCondition]
-    parameters: Dict[str, RemoteConfigParameter]
+    parameters: Optional[Dict[str, RemoteConfigParameter]] = Field(default_factory=dict)
     version: Optional[Version] = None
-    parameterGroups: Dict[str, RemoteConfigParameterGroup]
+    parameterGroups: Optional[Dict[str, RemoteConfigParameterGroup]] = Field(default_factory=dict)
 
 
 # https://firebase.google.com/docs/reference/remote-config/rest/v1/projects.remoteConfig/listVersions#query-parameters
