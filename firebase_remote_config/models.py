@@ -92,7 +92,7 @@ class RemoteConfigParameter(BaseModel):
 # https://firebase.google.com/docs/reference/remote-config/rest/v1/RemoteConfig#RemoteConfigParameterGroup
 class RemoteConfigParameterGroup(BaseModel):
     description: Optional[str] = None
-    parameters: Dict[str, RemoteConfigParameter]
+    parameters: Optional[Dict[str, RemoteConfigParameter]] = Field(default_factory=dict)
 
 
 # https://firebase.google.com/docs/reference/remote-config/rest/v1/Version#RemoteConfigUser
