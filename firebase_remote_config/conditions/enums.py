@@ -10,6 +10,7 @@ class ElementName(Enum):
     APP_VERSION = "app.version"  # Evaluates to TRUE or FALSE based on an app's version number.
     APP_ID = "app.id"  # An element based on the app's Firebase App ID.
     APP_AUDIENCES = "app.audiences"  # Evaluates to TRUE or FALSE based on Firebase Analytics audience(s).
+    APP_IMPORTED_SEGMENTS = "app.importedSegments"  # Evaluates to TRUE or FALSE based on whether user belongs to imported segments.
     APP_FIRST_OPEN_TIMESTAMP = "app.firstOpenTimestamp"  # Based on the first time a user launches an app.
     DEVICE_DATETIME = "dateTime"  # Based on the time of the last fetch (ISO format).
     APP_USER_PROPERTY = "app.userProperty"  # Evaluates based on Google Analytics User Property.
