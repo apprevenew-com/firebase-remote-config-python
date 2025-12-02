@@ -360,6 +360,42 @@ class ConditionBuilder(ConditionAppender):
                 """
                 return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.NOT_IN_ALL, xs))
 
+        class _APP_IMPORTED_SEGMENTS(ConditionAppender):
+            element = enums.ElementName.APP_IMPORTED_SEGMENTS
+            key = None
+
+            def IN_AT_LEAST_ONE(self, xs: List[str]) -> ConditionBuilder:
+                """
+                Matches when user belongs to at least one of the imported segments.
+                :param List[str] xs: Imported segments to match against.
+                Example: ["high_value_users", "new_users"]
+                """
+                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.IN_AT_LEAST_ONE, xs))
+
+            def NOT_IN_AT_LEAST_ONE(self, xs: List[str]) -> ConditionBuilder:
+                """
+                Matches when user does not belong to at least one of the imported segments.
+                :param List[str] xs: Imported segments to match against.
+                Example: ["inactive_users", "churned_users"]
+                """
+                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.NOT_IN_AT_LEAST_ONE, xs))
+
+            def IN_ALL(self, xs: List[str]) -> ConditionBuilder:
+                """
+                Matches when user belongs to all of the imported segments.
+                :param List[str] xs: Imported segments to match against.
+                Example: ["premium_users", "active_users"]
+                """
+                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.IN_ALL, xs))
+
+            def NOT_IN_ALL(self, xs: List[str]) -> ConditionBuilder:
+                """
+                Matches when user does not belong to all of the imported segments.
+                :param List[str] xs: Imported segments to match against.
+                Example: ["beta_testers", "early_adopters"]
+                """
+                return self._append(build_with_values(self.element, self.key, enums.ElementOperatorMethodAudiences.NOT_IN_ALL, xs))
+
         class _APP_FIRST_OPEN_TIMESTAMP(ConditionAppender):
             element = enums.ElementName.APP_FIRST_OPEN_TIMESTAMP
             key = None
