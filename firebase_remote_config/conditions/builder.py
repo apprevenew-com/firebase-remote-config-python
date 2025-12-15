@@ -104,6 +104,10 @@ class ConditionBuilder(ConditionAppender):
             """Appends condition based on app Google Analytics audiences."""
             return self._APP_AUDIENCES(self.builder_instance)
 
+        def APP_IMPORTED_SEGMENTS(self):
+            """Appends condition based on app imported segments."""
+            return self._APP_IMPORTED_SEGMENTS(self.builder_instance)
+
         def APP_FIRST_OPEN_TIMESTAMP(self):
             """Appends condition based on app first open timestamp."""
             return self._APP_FIRST_OPEN_TIMESTAMP(self.builder_instance)
