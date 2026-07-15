@@ -73,6 +73,13 @@ bill a different project:
 client = RemoteConfigClient(credentials, project_id, quota_project_id='billing-project')
 ```
 
+The constructor also accepts a `timeout` (seconds, applied to every request;
+default `30`). Pass `timeout=None` to disable it:
+
+```python
+client = RemoteConfigClient(credentials, project_id, timeout=10)
+```
+
 ### Use Cases
 
 
