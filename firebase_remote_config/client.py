@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple, Union
 
-import google.auth.transport.requests
 import requests
-from google.oauth2 import service_account
+from google.auth.credentials import Credentials, CredentialsWithQuotaProject
+from google.auth.transport.requests import AuthorizedSession
+from google.oauth2.credentials import Credentials as UserCredentials
 
 from . import exceptions
 from .models import (
@@ -17,54 +18,121 @@ from .models import (
 
 FIREBASE_REMOTE_CONFIG_URL = "https://firebaseremoteconfig.googleapis.com/v1/projects"
 
+# Default per-request timeout (seconds). Overridable via the client ctor.
+DEFAULT_TIMEOUT = 30
+
+Timeout = Union[float, Tuple[float, float]]
+
 
 class RemoteConfigClient:
-    def __init__(self, credentials: service_account.Credentials, project_id: str):
-        self.credentials = credentials
+    """Client for the Firebase Remote Config REST API.
+
+    Authentication goes through google-auth's ``AuthorizedSession``, so any
+    Application Default Credentials work: a service account, workload identity,
+    or local user credentials from ``gcloud auth application-default login``.
+    The session refreshes tokens automatically and attaches the
+    ``x-goog-user-project`` quota-project header when the credentials carry a
+    quota project.
+
+    The Remote Config REST API rejects **user** credentials that have no quota
+    project with ``403 SERVICE_DISABLED``. To keep that flow working out of the
+    box, user credentials without an explicit quota project default to
+    ``project_id``. Service-account / workload-identity credentials carry their
+    own project, so no quota project is attached for them.
+    """
+
+    def __init__(
+        self,
+        credentials: Credentials,
+        project_id: str,
+        quota_project_id: Optional[str] = None,
+        timeout: Timeout = DEFAULT_TIMEOUT,
+    ):
+        """Initialize the client.
+
+        Args:
+            credentials: Any google-auth credentials (service account, workload
+                identity, or user ADC).
+            project_id: Firebase / GCP project id that owns the Remote Config.
+            quota_project_id: Explicit ``x-goog-user-project`` billing/quota
+                project. When ``None``, it is resolved from the credentials
+                (see ``_resolve_quota_project``).
+            timeout: Per-request timeout in seconds, forwarded to ``requests``.
+        """
+        self.project_id = project_id
         self.url = f"{FIREBASE_REMOTE_CONFIG_URL}/{project_id}/remoteConfig"
+        self.timeout = timeout
+
+        quota_project = self._resolve_quota_project(
+            credentials, project_id, quota_project_id
+        )
+        if quota_project is not None and isinstance(
+            credentials, CredentialsWithQuotaProject
+        ):
+            credentials = credentials.with_quota_project(quota_project)
+
+        self.credentials = credentials
+        self.session = AuthorizedSession(credentials)
+
+    @staticmethod
+    def _resolve_quota_project(
+        credentials: Credentials,
+        project_id: str,
+        quota_project_id: Optional[str],
+    ) -> Optional[str]:
+        """Pick the quota project for the ``x-goog-user-project`` header.
+
+        An explicit ``quota_project_id`` always wins. Otherwise only **user**
+        credentials need one: honor a quota project they already carry, else
+        fall back to the target ``project_id``. Service-account /
+        workload-identity credentials get ``None``.
+        """
+        if quota_project_id is not None:
+            return quota_project_id
+        if isinstance(credentials, UserCredentials):
+            return getattr(credentials, "quota_project_id", None) or project_id
+        return None
 
     def _call_get_remote_config(self, version_number: Optional[str] = None) -> requests.Response:
-        access_token = get_oauth_token(self.credentials)
-        headers = make_headers(access_token)
+        headers = make_headers()
 
         if version_number is not None:
             params = {"versionNumber": version_number}
         else:
             params = None
 
-        response = requests.request(method="get", url=self.url, headers=headers, params=params)
-        return response
+        return self.session.get(
+            self.url, headers=headers, params=params, timeout=self.timeout
+        )
 
     def _call_update_remote_config(self, rc: RemoteConfig, validate_only: bool) -> requests.Response:
         url = self.url
         if validate_only:
             url = f"{self.url}?validate_only=true"
 
-        access_token = get_oauth_token(self.credentials)
-        headers = make_headers(access_token, rc.etag)
-
+        headers = make_headers(rc.etag)
         data = rc.template.model_dump_json(exclude_none=True)
-        response = requests.request(
-            method="put", url=url, headers=headers, data=data
+        return self.session.put(
+            url, headers=headers, data=data, timeout=self.timeout
         )
 
-        return response
-
     def _call_list_versions(self, params: ListVersionsParameters) -> requests.Response:
-        access_token = get_oauth_token(self.credentials)
-        headers = make_headers(access_token)
+        headers = make_headers()
         params_dict = params.model_dump(exclude_none=True)
 
-        response = requests.request(method="get", url=f"{self.url}:listVersions", headers=headers, params=params_dict)
-        return response
+        return self.session.get(
+            f"{self.url}:listVersions",
+            headers=headers,
+            params=params_dict,
+            timeout=self.timeout,
+        )
 
     def _call_rollback(self, request: RollbackRequest) -> requests.Response:
-        access_token = get_oauth_token(self.credentials)
-        headers = make_headers(access_token)
-
+        headers = make_headers()
         data = request.model_dump_json(exclude_none=True)
-        response = requests.request(method="post", url=f"{self.url}:rollback", headers=headers, data=data)
-        return response
+        return self.session.post(
+            f"{self.url}:rollback", headers=headers, data=data, timeout=self.timeout
+        )
 
     # API methods
 
@@ -121,21 +189,19 @@ class RemoteConfigClient:
 
 def make_remote_config(response: requests.Response) -> RemoteConfig:
     template = RemoteConfigTemplate.model_validate_json(response.text)
-    etag = response.headers["etag"]
+    etag = response.headers.get("etag", "")
     return RemoteConfig(template=template, etag=etag)
 
-def get_oauth_token(credentials: service_account.Credentials) -> Optional[str]:
-    if not credentials.token or credentials.expired:
-        request = google.auth.transport.requests.Request()
-        credentials.refresh(request)
 
-    return credentials.token
+def make_headers(etag: Optional[str] = None) -> Dict:
+    """Build request headers.
 
-
-def make_headers(access_token: str, etag: Optional[str] = None) -> Dict:
+    Authorization and the ``x-goog-user-project`` quota-project header are
+    added by the ``AuthorizedSession``; only content type and the optional
+    ``If-Match`` etag precondition are set here.
+    """
     headers = {
         "Content-Type": "application/json; UTF8",
-        "Authorization": f"Bearer {access_token}",
     }
 
     if etag:
