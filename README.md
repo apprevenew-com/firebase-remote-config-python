@@ -173,7 +173,8 @@ print(str(condition) == cond_expr)
 
 ```python
 # List recent versions
-versions, _ = client.list_versions(page_size=30)
+response = client.list_versions(page_size=30)
+versions = response.versions
 
 # Rollback to a previous version
 rolled_back_config = client.rollback(version_number="42")
