@@ -28,7 +28,7 @@ pip install firebase-remote-config
 
 - Python 3.9 or higher
 - Firebase project with Remote Config enabled
-- Service account credentials with necessary permissions (Firebase Admin / Firebase Remote Config Admin)
+- Google credentials with the necessary permissions (Firebase Admin / Firebase Remote Config Admin). Any [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) work: a service account, workload identity, or local user credentials from `gcloud auth application-default login`.
 
 ## Usage
 
@@ -49,6 +49,35 @@ config = client.get_remote_config()
 
 # Upload template to Firebase Remote Config
 updated_config = client.update_remote_config(config)
+```
+
+Authentication goes through google-auth's `AuthorizedSession`, so any Application
+Default Credentials work — including local user credentials:
+
+```python
+import google.auth
+from firebase_remote_config import RemoteConfigClient
+
+# Resolve Application Default Credentials (service account, workload identity,
+# or `gcloud auth application-default login`)
+credentials, project_id = google.auth.default()
+client = RemoteConfigClient(credentials, project_id)
+```
+
+The Remote Config REST API rejects **user** credentials that carry no quota
+project with `403 SERVICE_DISABLED`. The client handles this by defaulting the
+quota project to `project_id` for user credentials; pass `quota_project_id` to
+bill a different project:
+
+```python
+client = RemoteConfigClient(credentials, project_id, quota_project_id='billing-project')
+```
+
+The constructor also accepts a `timeout` (seconds, applied to every request;
+default `30`). Pass `timeout=None` to disable it:
+
+```python
+client = RemoteConfigClient(credentials, project_id, timeout=10)
 ```
 
 ### Use Cases
@@ -144,7 +173,8 @@ print(str(condition) == cond_expr)
 
 ```python
 # List recent versions
-versions, _ = client.list_versions(page_size=30)
+response = client.list_versions(page_size=30)
+versions = response.versions
 
 # Rollback to a previous version
 rolled_back_config = client.rollback(version_number="42")
