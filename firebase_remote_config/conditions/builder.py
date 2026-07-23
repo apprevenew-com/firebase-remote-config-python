@@ -58,33 +58,42 @@ class ConditionBuilder(ConditionAppender):
         return self._CONDITION(self)
 
     class _PERCENT(ConditionAppender):
-        def GT(self, percent: int) -> ConditionBuilder:
+        def GT(self, percent: int, seed: Optional[str] = None) -> ConditionBuilder:
             """
             Matches when user percentage is greater than provided percent value.
 
             :param int percent: Percent value (0-100).
+            :param Optional[str] seed: Optional hashing seed (0-32 chars from
+                [-_.0-9a-zA-Z]); renders as percent('seed') > N. Omit to use the
+                default per-project randomization.
             Example: 50 for 50%
             """
-            return self._append(cond.PercentCondition(percent=percent, percentOperator=enums.PercentConditionOperator.GREATER_THAN))
+            return self._append(cond.PercentCondition(percent=percent, percentOperator=enums.PercentConditionOperator.GREATER_THAN, seed=seed))
 
-        def LTE(self, percent: int) -> ConditionBuilder:
+        def LTE(self, percent: int, seed: Optional[str] = None) -> ConditionBuilder:
             """
             Matches when user percentage is less than or equal to provided percent value.
 
             :param int percent: Percent value (0-100).
+            :param Optional[str] seed: Optional hashing seed (0-32 chars from
+                [-_.0-9a-zA-Z]); renders as percent('seed') <= N. Omit to use the
+                default per-project randomization.
             Example: 25 for 25%
             """
-            return self._append(cond.PercentCondition(percent=percent, percentOperator=enums.PercentConditionOperator.LESS_OR_EQUAL))
+            return self._append(cond.PercentCondition(percent=percent, percentOperator=enums.PercentConditionOperator.LESS_OR_EQUAL, seed=seed))
 
-        def BETWEEN(self, lower: int, upper: int) -> ConditionBuilder:
+        def BETWEEN(self, lower: int, upper: int, seed: Optional[str] = None) -> ConditionBuilder:
             """
             Matches when user percentage is between lower and upper bounds.
 
             :param int lower: Lower bound (0-100).
             :param int upper: Upper bound (0-100).
+            :param Optional[str] seed: Optional hashing seed (0-32 chars from
+                [-_.0-9a-zA-Z]); renders as percent('seed') between L and U. Omit to
+                use the default per-project randomization.
             Example: lower=20, upper=40 for 20-40%
             """
-            return self._append(cond.PercentCondition(percentRange=cond.PercentRange(lowerBound=lower, upperBound=upper), percentOperator=enums.PercentConditionOperator.BETWEEN))
+            return self._append(cond.PercentCondition(percentRange=cond.PercentRange(lowerBound=lower, upperBound=upper), percentOperator=enums.PercentConditionOperator.BETWEEN, seed=seed))
 
     class _CONDITION(ConditionAppender):
 

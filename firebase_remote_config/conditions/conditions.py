@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Annotated, List, Optional, Union
 
@@ -135,6 +136,9 @@ class PercentCondition(BaseModel):
             raise ValueError("percentRange must be used with BETWEEN percentOperator")
         if self.percentOperator in [enums.PercentConditionOperator.GREATER_THAN, enums.PercentConditionOperator.LESS_OR_EQUAL] and not self.percent:
             raise ValueError(f"percent must be used with {self.percentOperator.value} percentOperator")
+        # Firebase Remote Config seed: 0-32 chars from [-_.0-9a-zA-Z].
+        if self.seed is not None and not re.fullmatch(r"[-_.0-9a-zA-Z]{0,32}", self.seed):
+            raise ValueError("seed must be 0-32 characters from [-_.0-9a-zA-Z]")
         return self
 
     def __repr__(self):
