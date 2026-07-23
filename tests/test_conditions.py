@@ -1,6 +1,8 @@
 from datetime import datetime
 
+import pytest
 import pytz
+from pydantic import ValidationError
 
 import firebase_remote_config.conditions as cond
 
@@ -23,6 +25,37 @@ def test_percent():
         ),
     )
     assert str(c) == "percent between 0 and 50"
+
+
+def test_percent_seed():
+    b = cond.ConditionBuilder()
+    assert str(b.PERCENT().BETWEEN(0, 50, seed="my-seed").build()) == (
+        "percent('my-seed') between 0 and 50"
+    )
+
+    b = cond.ConditionBuilder()
+    assert str(b.PERCENT().LTE(50, seed="s.1_2-3").build()) == (
+        "percent('s.1_2-3') <= 50"
+    )
+
+    b = cond.ConditionBuilder()
+    assert str(b.PERCENT().GT(10, seed="abc").build()) == "percent('abc') > 10"
+
+
+def test_percent_seed_validation():
+    # Firebase allows a seed of 0-32 characters from [-_.0-9a-zA-Z].
+    with pytest.raises(ValidationError):
+        cond.PercentCondition(
+            percent=50,
+            percentOperator=cond.PercentConditionOperator.LESS_OR_EQUAL,
+            seed="x" * 33,
+        )
+    with pytest.raises(ValidationError):
+        cond.PercentCondition(
+            percent=50,
+            percentOperator=cond.PercentConditionOperator.LESS_OR_EQUAL,
+            seed="has space",
+        )
 
 
 def test_always():
