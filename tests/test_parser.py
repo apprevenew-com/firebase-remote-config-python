@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import firebase_remote_config.conditions as cond
 import firebase_remote_config.conditions.enums as enums
 
@@ -14,7 +16,20 @@ def test_valid_conditions():
         "app.firstOpenTimestamp <= ('2025-01-01T09:00:00')",
         "app.build.>=(['1.0.0']) && app.version.contains(['1.0.', '2.1.0'])",
         "device.language in ['en-US', 'RU'] && device.country in ['GB', 'AU', 'CA']",
-        "dateTime < dateTime('2025-01-01T09:02:30') && dateTime >= dateTime('2025-01-01T09:02:30', 'UTC')"
+        "dateTime < dateTime('2025-01-01T09:02:30') && dateTime >= dateTime('2025-01-01T09:02:30', 'UTC')",
+        # numeric user property / custom signal values: zero, decimals, negatives
+        "app.userProperty['count_purchases'] > 0",
+        "app.userProperty['amount'] == 0",
+        "app.userProperty['amount'] <= 3.99",
+        "app.userProperty['ratio'] < 0.5",
+        "app.userProperty['delta'] >= -2",
+        "app.userProperty['delta'] != -0.25",
+        "app.customSignal['score'] > 1.5 && app.userProperty['bucket'] == 1",
+        # IANA timezones keep their name
+        "app.firstOpenTimestamp > ('2025-10-01T00:00:00', 'Europe/Lisbon')",
+        "app.firstOpenTimestamp <= ('2025-07-02T00:00:00', 'Asia/Bangkok')",
+        "app.firstOpenTimestamp > ('2025-10-01T00:00:00', 'Etc/GMT')",
+        "dateTime >= dateTime('2025-01-01T09:02:30', 'America/New_York')",
     ]
 
     for case_str in test_cases_valid:
@@ -62,6 +77,39 @@ def test_invalid_conditions():
 
         if passed:
             raise AssertionError(f"Parsed invalid condition {case_str} into {str(condition)}")
+
+
+def test_numeric_values_keep_type():
+    p = cond.ConditionParser()
+
+    cases = [
+        ("app.userProperty['x'] > 0", 0, int),
+        ("app.userProperty['x'] == 0", 0, int),
+        ("app.userProperty['x'] <= 3.99", 3.99, float),
+        ("app.userProperty['x'] < 0.5", 0.5, float),
+        ("app.userProperty['x'] >= -2", -2, int),
+    ]
+
+    for case_str, value, value_type in cases:
+        element = p.parse(case_str).conditions[0]
+        assert element.value == value, case_str
+        assert type(element.value) is value_type, case_str
+
+
+def test_timezone_offsets_are_correct():
+    p = cond.ConditionParser()
+
+    cases = [
+        # (expression, expected UTC offset in hours)
+        ("app.firstOpenTimestamp > ('2025-07-01T00:00:00', 'Europe/Lisbon')", 1),  # WEST
+        ("app.firstOpenTimestamp > ('2025-01-01T00:00:00', 'Europe/Lisbon')", 0),  # WET
+        ("app.firstOpenTimestamp > ('2025-01-01T00:00:00', 'Asia/Bangkok')", 7),
+        ("app.firstOpenTimestamp > ('2025-01-01T00:00:00', 'Etc/GMT')", 0),
+    ]
+
+    for case_str, hours in cases:
+        value = p.parse(case_str).conditions[0].value
+        assert value.utcoffset() == timedelta(hours=hours), case_str
 
 
 def test_get_grammar_method():

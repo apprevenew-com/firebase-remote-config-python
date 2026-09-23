@@ -26,13 +26,15 @@ def in_brackets(el: pp.ParserElement) -> pp.ParserElement:
 literal_str = pp.QuotedString("'")
 literal_int = pp.common.signed_integer()
 literal_uint = pp.common.integer()
+literal_real = pp.common.real()
 
 
 def set_tz(toks: pp.ParseResults):
     """Parse action that applies provided timezone (tz token) to datetime (dt token)."""
     dt: datetime = toks.dt
     if toks.tz:
-        dt = dt.replace(tzinfo=pytz.timezone(toks.tz))
+        # localize, not replace: replace attaches the zone's historical LMT offset
+        dt = pytz.timezone(toks.tz).localize(dt)
     return dt
 
 
@@ -68,7 +70,8 @@ percent_condition = percent_condition_binary | percent_condition_ternary
 # element conditions
 
 value_single_str = literal_str("value_single")
-value_single_int = literal_int("value_single")
+# real before int, otherwise `3.99` stops after `3`
+value_single_number = (literal_real | literal_int)("value_single")
 value_single_timestamp = in_parentheses(literal_dt("value_single"))
 value_single_datetime = pp.Keyword("datetime", caseless=True) + in_parentheses(literal_dt("value_single"))
 value_array_str = in_brackets(pp.DelimitedList(literal_str)("value_array"))
@@ -87,7 +90,7 @@ def make_value(name: enums.ElementName, op: enums.ElementOperator) -> pp.ParserE
                 return value_single_datetime
             elif valid.supports_timestamp(name):
                 return value_single_timestamp
-            return value_single_int | value_single_str
+            return value_single_number | value_single_str
         else:
             return value_array_str
 
@@ -126,7 +129,8 @@ def make_element_condition(el_name: enums.ElementName, op: enums.ElementOperator
         ),
         operator=op,
         values=list(toks.value_array) or None,
-        value=toks.value_single or None,
+        # presence check, not truthiness: 0 and 0.0 are valid values
+        value=toks.value_single if "value_single" in toks else None,
     ))
 
     return expr
