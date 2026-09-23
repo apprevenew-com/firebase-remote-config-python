@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 - 2026-09-23
+
+- Fix `ConditionParser` rejecting numeric values equal to zero (`app.userProperty['x'] > 0`, `== 0`, `< 0.0`): the parsed value was tested for truthiness, so `0` was dropped and the condition failed validation.
+- Fix `ConditionParser` failing on decimal values (`app.userProperty['x'] <= 3.99`); they now parse as `float`, while integers stay `int`.
+- Fix timezone handling in parsed datetimes (`app.firstOpenTimestamp`, `dateTime`): a named zone such as `'Europe/Lisbon'` was attached with `datetime.replace`, giving the zone's historical LMT offset (a wrong instant), and was rendered back as `'LMT'`. Zones are now localized correctly, and conditions render the IANA zone name, so parsing and printing a condition returns the original expression.
+
 ## 0.3.0 - 2026-07-23
 
 - Add an optional `seed` argument to `ConditionBuilder.PERCENT().GT()` / `.LTE()` / `.BETWEEN()`, so percent conditions can pin the hashing seed (renders as `percent('seed') <op> N`). Omitting it keeps the default per-project randomization.

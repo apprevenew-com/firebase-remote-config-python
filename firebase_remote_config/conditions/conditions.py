@@ -28,7 +28,9 @@ def str_custom_value(v: enums.CustomValue) -> str:
         parts = [v_str]
 
         if v.tzinfo:
-            tz_str = datetime.tzname(v)
+            # IANA zone name (pytz `zone`, zoneinfo `key`); tzname() only gives an
+            # abbreviation such as 'WEST' or 'LMT'
+            tz_str = getattr(v.tzinfo, "zone", None) or getattr(v.tzinfo, "key", None) or datetime.tzname(v)
 
             if tz_str == "GMT":
                 tz_str = "Etc/GMT"  # Firebase Remote Config uses Etc/GMT for GMT
